@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Video Greeting & Share</title> <!-- Title updated for clarity -->
+    <style>
+        html, body { margin: 0; padding: 0; width: 100%; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; background-color: #f0f2f5; color: #1c1e21; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 15px; min-height: 100vh; overflow-x: hidden; padding-bottom: 80px; /* Space for bottom banner */ }
+        .container { background-color: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); width: 100%; max-width: 400px; text-align: center; z-index: 1; margin-bottom: 20px; }
+        video#videoDisplay { width: 100%; max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ccd0d5; background-color: #000; display: block; }
+        @keyframes zoomInOut { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes colorChangeGreeting { 0% { color: #0d8a45; } 25% { color: #1a9c54; } 50% { color: #218838; } 75% { color: #1e7e34; } 100% { color: #0d8a45; } }
+        @keyframes colorChangeSender { 0% { color: #007bff; } 25% { color: #17a2b8; } 50% { color: #28a745; } 75% { color: #ffc107; } 100% { color: #007bff; } }
+        .greeting-title { font-size: 1.7em; font-weight: 700; margin-top: 5px; margin-bottom: 10px; animation: zoomInOut 4s infinite ease-in-out, colorChangeGreeting 10s infinite linear; }
+        .sender-name-display { font-size: 1.2em; margin-top: 5px; margin-bottom: 20px; min-height: 1.3em; font-weight: 600; }
+        .sender-name-display.animate { animation: zoomInOut 3s infinite ease-in-out 0.5s, colorChangeSender 8s infinite linear 0.5s; }
+        .input-label { display: block; font-size: 0.9em; color: #606770; margin-bottom: 6px; font-weight: 500; }
+        input[type="text"] { width: 100%; padding: 12px 15px; margin-bottom: 15px; border: 1px solid #ccd0d5; border-radius: 6px; font-size: 1em; box-sizing: border-box; text-align: right; background-color: #f5f6f7; }
+        input[type="text"]::placeholder { color: #8a8d91; opacity: 1; }
+        button#shareButton { background-color: #1877f2; color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 1.05em; font-weight: 600; transition: background-color 0.2s ease, transform 0.1s ease; width: 100%; margin-top: 5px; }
+        button#shareButton:hover { background-color: #166fe5; }
+        button#shareButton:active { transform: scale(0.98); }
+        .footer { margin-top: 25px; font-size: 0.8em; color: #8a8d91; text-align: center; width: 100%;}
+        .adsterra-banner-container { width: 100%; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <video id="videoDisplay" src="jumma_mubarak.mp4" controls autoplay loop playsinline>
+            <!-- ZAROORI: "jumma_mubarak.mp4" ko apni video file ke naam se badlein agar alag hai, -->
+            <!-- aur yeh file index.html ke saath wale folder mein honi chahiye. -->
+            آپکا براؤزر ویڈیو ٹیگ کو سپورٹ نہیں کرتا۔
+        </video>
+
+        <p id="greetingTitle" class="greeting-title">جمعہ مبارک!</p>
+        <p id="senderNameDisplay" class="sender-name-display"></p>
+
+        <label for="userName" class="input-label">نام درج کریں:</label>
+        <input type="text" id="userName" placeholder="یہاں اپنا نام لکھیں">
+
+        <button id="shareButton" onclick="processShareAndShowAd()">WhatsApp پر شئیر کریں</button>
+    </div>
+
+    <div class="footer">
+        <p>یہ گریٹنگ موبائل کے لیے بنائی گئی ہے۔</p>
+    </div>
+
+    <!-- Adsterra Banner Ad for Page Load (Bottom of Mobile) -->
+    <div class="adsterra-banner-container">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : '8b1e10893f8a3296ac688db60f914f4f', // Aapka Banner Ad Key
+                'format' : 'iframe',
+                'height' : 60,
+                'width' : 468, 
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/8b1e10893f8a3296ac688db60f914f4f/invoke.js"></script>
+    </div>
+    <!-- End Adsterra Banner Ad -->
+
+
+    <script>
+        const userNameInput = document.getElementById('userName');
+        const greetingTitleElement = document.getElementById('greetingTitle');
+        const senderNameDisplayElement = document.getElementById('senderNameDisplay');
+        const baseGreeting = greetingTitleElement.innerText;
+
+        // Adsterra link for on-click (Pop-under/Direct Link type)
+        const onClickAdLink = 'https://www.profitableratecpm.com/ww5e03f3q?key=8247949b48434a62f007d17bf95639e3'; // Aapka On-Click Ad Key/Link
+        let adWindow = null; // To keep track of the ad window
+
+        function triggerOnClickAd() {
+            if (adWindow && !adWindow.closed) {
+                // Optional: if you want to try to close any pre-existing ad window first
+                // adWindow.close(); // This line is often ineffective due to browser security
+            }
+            // Open the ad link. It will open in a new tab/window.
+            adWindow = window.open(onClickAdLink, '_blank', 'width=400,height=300,noopener,noreferrer');
+            // We don't wait for it or try to close it. User is redirected to WhatsApp quickly.
+        }
+
+        function processShareAndShowAd() {
+            const enteredName = userNameInput.value.trim();
+            let personalizedMessageForShare;
+            let displayName = "";
+            senderNameDisplayElement.classList.remove('animate'); // Reset animation class
+
+            if (enteredName) {
+                personalizedMessageForShare = `${enteredName} کی جانب سے:\n${baseGreeting}`;
+                displayName = `از طرف: ${enteredName}`;
+                // Add class to start animation for sender name after a brief delay
+                setTimeout(() => { 
+                    senderNameDisplayElement.classList.add('animate'); 
+                }, 10); 
+            } else {
+                personalizedMessageForShare = baseGreeting;
+                // No name entered, ensure no sender name is displayed or animated
+                senderNameDisplayElement.innerText = ""; // Clear display name
+            }
+            senderNameDisplayElement.innerText = displayName; // Update display name on page
+            
+            // --- MODIFIED PART for Ad and WhatsApp Redirect ---
+            // 1. Trigger the on-click ad
+            triggerOnClickAd(); 
+
+            // 2. Prepare WhatsApp message
+            let finalMessageToShare = personalizedMessageForShare + "\n\n";
+            const pageUrl = window.location.href; // Current page's URL
+            finalMessageToShare += "یہ گریٹنگ یہاں دیکھیں: " + pageUrl;
+            const encodedMessage = encodeURIComponent(finalMessageToShare);
+            const whatsappURL = "https://wa.me/?text=" + encodedMessage;
+            
+            // 3. Redirect to WhatsApp ALMOST IMMEDIATELY after triggering ad
+            setTimeout(() => {
+                window.location.href = whatsappURL; // Redirect current tab to WhatsApp
+            }, 200); // 200 milliseconds (0.2 seconds) delay.
+            // --- END OF MODIFIED PART ---
+        }
+
+        window.onload = function() {
+            const videoElement = document.getElementById('videoDisplay');
+            if (videoElement) {
+                videoElement.play().then(() => {
+                    console.log("Video autoplay attempt with sound.");
+                }).catch(error => {
+                    console.warn("Video autoplay with sound was blocked or failed.", error);
+                });
+                videoElement.onerror = function() {
+                    console.error("Error loading video. Path: " + videoElement.src);
+                    greetingTitleElement.innerText = "ویڈیو لوڈ ہونے میں مسئلہ ہے۔";
+                    greetingTitleElement.style.animation = 'none'; // Stop animation if video fails
+                    senderNameDisplayElement.innerText = "";
+                    senderNameDisplayElement.classList.remove('animate');
+                };
+            }
+            // Ensure sender name display is empty on load
+            senderNameDisplayElement.innerText = "";
+        };
+    </script>
+
+</body>
+</html>
